@@ -76,9 +76,15 @@ fn process_directory(dir_path: &str) -> io::Result<()> {
                 .ok()
                 .and_then(|p| p.to_str())
                 .unwrap();
+            let remote_origin_url = get_remote_origin_url(&dir_path).unwrap();
+
+            println!(
+                "Processing {} with remote_origin_url={}, current_branch={}",
+                relative_path, remote_origin_url, current_branch
+            );
 
             inject_origin_url(
-                &get_remote_origin_url(&dir_path).unwrap(),
+                &remote_origin_url,
                 &current_branch,
                 &entry.path().to_str().unwrap(),
                 &relative_path,
