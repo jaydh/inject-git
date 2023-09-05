@@ -53,9 +53,9 @@ fn inject_origin_url(
     input_file.read_to_string(&mut code)?;
 
     let modified_code = code.replace(
-        "<a href=\"#[git]\"",
+        "href=\"#[git]\"",
         &format!(
-            "<a href=\"{}/blob/{}/{}\"",
+            "href=\"{}/blob/{}/{}\"",
             repo_url, current_branch, relative_path
         ),
     );
