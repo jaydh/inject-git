@@ -1,6 +1,8 @@
 use std::env;
+use std::ffi::OsStr;
 use std::fs;
 use std::io::{self, Read, Write};
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use walkdir::WalkDir;
 
@@ -77,7 +79,6 @@ fn inject_origin_url(
         "#[git]",
         &format!("{}/tree/{}/{}", repo_url, current_branch, relative_path),
     );
-    println!("Changing code={} to {}", code, modified_code);
 
     let mut output_file = fs::File::create(file_path)?;
     output_file.write_all(modified_code.as_bytes())?;
@@ -91,8 +92,8 @@ fn process_directory(dir_path: &str) -> io::Result<()> {
     for entry in WalkDir::new(dir_path).into_iter().filter_map(|e| e.ok()) {
         if entry.file_type().is_file() && entry.path().to_string_lossy().ends_with(".rs") {
             let current_branch = get_current_branch(&dir_path).unwrap();
-            let relative_path = entry
-                .path()
+            let full_path: PathBuf = fs::canonicalize(entry.path())?;
+            let relative_path = full_path
                 .strip_prefix(&root_dir)
                 .ok()
                 .and_then(|p| p.to_str())
