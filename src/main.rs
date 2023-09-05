@@ -59,6 +59,7 @@ fn inject_origin_url(
             repo_url, current_branch, relative_path
         ),
     );
+    println!("Changing code={} to {}", code, modified_code);
 
     let mut output_file = fs::File::create(file_path)?;
     output_file.write_all(modified_code.as_bytes())?;
