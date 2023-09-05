@@ -4,6 +4,27 @@ use std::io::{self, Read, Write};
 use std::process::{Command, Stdio};
 use walkdir::WalkDir;
 
+fn get_git_repository_root(dir_path: &str) -> io::Result<String> {
+    let output = Command::new("git")
+        .arg("rev-parse")
+        .arg("--show-toplevel")
+        .current_dir(dir_path)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::inherit())
+        .output()
+        .unwrap();
+
+    if output.status.success() {
+        let root_path = String::from_utf8_lossy(&output.stdout);
+        Ok(root_path.trim().to_string())
+    } else {
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Failed to determine Git repository root",
+        ))
+    }
+}
+
 fn get_remote_origin_url(dir_path: &str) -> Option<String> {
     let output = Command::new("git")
         .arg("config")
@@ -53,11 +74,8 @@ fn inject_origin_url(
     input_file.read_to_string(&mut code)?;
 
     let modified_code = code.replace(
-        "href=\"#[git]\"",
-        &format!(
-            "href=\"{}/blob/{}/{}\"",
-            repo_url, current_branch, relative_path
-        ),
+        "#[git]",
+        &format!("{}/tree/{}/{}", repo_url, current_branch, relative_path),
     );
     println!("Changing code={} to {}", code, modified_code);
 
@@ -68,12 +86,14 @@ fn inject_origin_url(
 }
 
 fn process_directory(dir_path: &str) -> io::Result<()> {
+    let root_dir = get_git_repository_root(dir_path)?;
+
     for entry in WalkDir::new(dir_path).into_iter().filter_map(|e| e.ok()) {
         if entry.file_type().is_file() && entry.path().to_string_lossy().ends_with(".rs") {
             let current_branch = get_current_branch(&dir_path).unwrap();
             let relative_path = entry
                 .path()
-                .strip_prefix(dir_path)
+                .strip_prefix(&root_dir)
                 .ok()
                 .and_then(|p| p.to_str())
                 .unwrap();
@@ -85,7 +105,7 @@ fn process_directory(dir_path: &str) -> io::Result<()> {
             );
 
             inject_origin_url(
-                &remote_origin_url,
+                &remote_origin_url.strip_suffix(".git").unwrap(),
                 &current_branch,
                 &entry.path().to_str().unwrap(),
                 &relative_path,
