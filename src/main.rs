@@ -1,8 +1,7 @@
 use std::env;
-use std::ffi::OsStr;
 use std::fs;
 use std::io::{self, Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use walkdir::WalkDir;
 
