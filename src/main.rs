@@ -124,11 +124,6 @@ fn main() -> io::Result<()> {
     }
 
     let dir_path = &args[1];
-    for entry in fs::read_dir(dir_path)? {
-        let entry = entry?;
-        let file_name = entry.file_name();
-        println!("{}", file_name.to_string_lossy());
-    }
 
     process_directory(dir_path)?;
 
