@@ -103,9 +103,12 @@ fn process_directory(dir_path: &str) -> io::Result<()> {
                 "Processing {} with remote_origin_url={}, current_branch={}",
                 relative_path, remote_origin_url, current_branch
             );
+            let stripped = remote_origin_url
+                .strip_suffix(".git")
+                .map_or(remote_origin_url.clone(), |s| s.to_string());
 
             inject_origin_url(
-                &remote_origin_url.strip_suffix(".git").unwrap(),
+                &stripped,
                 &current_branch,
                 &entry.path().to_str().unwrap(),
                 &relative_path,
