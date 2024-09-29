@@ -13,7 +13,7 @@ fn get_git_repository_root(dir_path: &str) -> io::Result<String> {
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
         .output()
-        .unwrap();
+        .expect("Failed to execute git command.");
 
     if output.status.success() {
         let root_path = String::from_utf8_lossy(&output.stdout);
