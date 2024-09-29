@@ -105,7 +105,7 @@ fn process_directory(dir_path: &str) -> io::Result<()> {
             );
 
             inject_origin_url(
-                &remote_origin_url.strip_suffix(".git").unwrap(),
+                &remote_origin_url.unwrap(),
                 &current_branch,
                 &entry.path().to_str().unwrap(),
                 &relative_path,
